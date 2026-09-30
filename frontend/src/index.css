@@ -1,0 +1,25 @@
+/* App shell. The calculator brings its own styles (calculator.css); this only
+   sets the page background and centers the component, matching the design canvas. */
+:root {
+  color-scheme: light dark;
+  font-family:
+    'IBM Plex Sans',
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+}
+
+body {
+  margin: 0;
+  background: light-dark(oklch(0.965 0.004 80), oklch(0.17 0.005 70));
+  color: light-dark(oklch(0.24 0.01 70), oklch(0.95 0.005 80));
+}
+
+.app {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
