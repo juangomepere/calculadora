@@ -1,0 +1,22 @@
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/coverage/
+*.tsbuildinfo
+
+# Env files (keep .env.example)
+.env
+.env.local
+*.local
+
+# Go / backend
+backend/coverage.out
+backend/coverage.html
+backend/server
+backend/server.exe
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.log
