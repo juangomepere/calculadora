@@ -1,0 +1,7 @@
+dist
+coverage
+node_modules
+
+# Vendored design component — integrated as-is from Claude Design, not reformatted.
+src/components/Calculator.tsx
+src/components/calculator.css
