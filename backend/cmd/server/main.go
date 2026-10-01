@@ -5,7 +5,6 @@ package main
 import (
 	"context"
 	"errors"
-	"flag"
 	"log/slog"
 	"net/http"
 	"os"
@@ -18,35 +17,12 @@ import (
 )
 
 func main() {
-	// -healthcheck lets the distroless container probe itself (no shell/curl
-	// available): it hits /healthz and exits 0 on success, non-zero otherwise.
-	healthcheck := flag.Bool("healthcheck", false, "probe /healthz and exit")
-	flag.Parse()
-
-	if *healthcheck {
-		os.Exit(probeHealth(getenv("PORT", "8080")))
-	}
-
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 	if err := run(logger); err != nil {
 		logger.Error("server exited with error", slog.Any("error", err))
 		os.Exit(1)
 	}
-}
-
-// probeHealth returns 0 if GET /healthz on the local server returns 200.
-func probeHealth(port string) int {
-	client := http.Client{Timeout: 2 * time.Second}
-	resp, err := client.Get("http://127.0.0.1:" + port + "/healthz")
-	if err != nil {
-		return 1
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return 1
-	}
-	return 0
 }
 
 func run(logger *slog.Logger) error {
