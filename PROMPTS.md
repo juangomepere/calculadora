@@ -55,10 +55,12 @@ trabajo de principio a fin. Resumen de lo que generó cada fase:
    pulsaciones, payload, resultado, error de división por cero, loading, atajos de
    teclado, historial y capa de API.
 
-8. **Docker y docs.** `backend/Dockerfile` (multi-stage, binario estático,
-   distroless no-root), `frontend/Dockerfile` (build node + nginx SPA),
-   `docker-compose.yml` (3000/8080, healthchecks, env cableado), `README.md`,
-   `.gitignore` y este archivo.
+8. **Scripts raíz y docs.** `package.json` en la raíz con `concurrently` para
+   `npm run dev` (backend + frontend a la vez) y `npm test` / `npm run
+   test:coverage` (ambas capas), más `README.md`, `.gitignore` y este archivo.
+   (Se incluyeron Dockerfiles + compose en una iteración previa y luego se
+   eliminaron: Docker era opcional y se prefirió simplificar con los scripts
+   raíz.)
 
 9. **Cierre.** Ejecución de `go test`/`go vet`/verificación gofmt y
    `npm run test -- --coverage`/lint/format; captura de curls reales contra el

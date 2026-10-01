@@ -26,8 +26,9 @@ El componente de UI viene diseñado en Claude Design (`Calculator.tsx` +
 
 ```
 /
+├── package.json        scripts raíz: dev y test de ambos servicios a la vez
 ├── backend/            Go 1.22, solo stdlib
-│   ├── cmd/server/     wiring, config por env, graceful shutdown, healthcheck
+│   ├── cmd/server/     wiring, config por env, graceful shutdown
 │   └── internal/
 │       ├── calculator/ lógica pura (sin HTTP), errores de dominio centinela
 │       └── api/         handlers, validación, mapeo de errores, middleware
@@ -37,7 +38,6 @@ El componente de UI viene diseñado en Claude Design (`Calculator.tsx` +
 │       ├── calculate.ts adaptador UI → API (mapea nombres de operación)
 │       ├── components/  Calculator.tsx + calculator.css (diseño, tal cual)
 │       └── test/        setup de Vitest + MSW
-├── docker-compose.yml
 ├── README.md
 ├── PROMPTS.md
 └── .gitignore
@@ -47,9 +47,29 @@ El componente de UI viene diseñado en Claude Design (`Calculator.tsx` +
 
 - **Go** 1.22+
 - **Node** 20+ y npm
-- (Opcional) **Docker** + Docker Compose
 
-## Setup local
+## Inicio rápido (desde la raíz, un comando)
+
+```bash
+npm install          # instala deps raíz + frontend (via postinstall)
+npm run dev          # levanta backend (:8080) y frontend (:5173) a la vez
+```
+
+Abre **http://localhost:5173**. `npm run dev` usa `concurrently`: el backend
+corre con `go run` y el frontend con Vite, con logs etiquetados.
+
+Scripts raíz disponibles:
+
+| Comando                     | Qué hace                                             |
+|-----------------------------|------------------------------------------------------|
+| `npm run dev`               | backend + frontend a la vez                          |
+| `npm test`                  | tests de backend y frontend                          |
+| `npm run test:coverage`     | tests + cobertura de ambas capas                     |
+| `npm run lint`              | `go vet` + ESLint                                    |
+| `npm run dev:backend`       | solo el backend (`:8080`)                            |
+| `npm run dev:frontend`      | solo el frontend (`:5173`)                           |
+
+## Setup por servicio (alternativa)
 
 ### Backend
 
@@ -70,22 +90,12 @@ Variables de entorno:
 ```bash
 cd frontend
 npm install
-cp .env.example .env         # VITE_API_URL=http://localhost:8080
+cp .env.example .env         # VITE_API_URL=http://localhost:8080 (opcional)
 npm run dev                  # Vite en :5173
 ```
 
-La URL base del backend sale de `import.meta.env.VITE_API_URL`.
-
-## Todo con Docker (un comando)
-
-```bash
-docker compose up --build
-```
-
-- Frontend (nginx, SPA) en **http://localhost:3000**
-- Backend en **http://localhost:8080**
-- `VITE_API_URL` (build arg) y `ALLOWED_ORIGINS` ya cableados; healthchecks en
-  ambos servicios; el frontend espera a que el backend esté `healthy`.
+La URL base del backend sale de `import.meta.env.VITE_API_URL` (por defecto
+`http://localhost:8080`).
 
 ## Endpoints
 
@@ -167,6 +177,15 @@ Todas las respuestas de error tienen la forma
 | —                       | 405  | método no permitido en una ruta existente     |
 
 ## Tests y cobertura
+
+Desde la raíz, para ambas capas de una vez:
+
+```bash
+npm test                 # go test ./...  +  vitest run
+npm run test:coverage    # lo mismo, con cobertura
+```
+
+O por separado:
 
 ### Backend
 
@@ -269,8 +288,10 @@ cd frontend && npm run lint && npm run format:check
 - **OpenAPI** / spec del contrato + cliente TS generado a partir de ella.
 - **Precisión decimal** (`math/big` o decimal) en vez de `float64` para dinero /
   cálculos exactos.
-- **CI** (GitHub Actions): `go test`/`vet`/`gofmt` + `npm test`/lint + build de
-  imágenes en cada push.
+- **CI** (GitHub Actions): `go test`/`vet`/`gofmt` + `npm test`/lint en cada push.
+- **Contenedores**: se omitió Docker (era opcional) para mantener el repo simple;
+  `npm run dev` cubre el arranque local. Añadir Dockerfiles + compose es directo
+  si se necesita despliegue.
 - Persistencia del historial (hoy es en memoria del cliente) y i18n de mensajes.
 
 ### Notas del entorno
@@ -284,10 +305,6 @@ cd frontend && npm run lint && npm run format:check
   - Para los tests/cobertura se fijó `GOTMPDIR` fuera de `%TEMP%` y se compiló con
     un `-buildid` único (`go test ./... -ldflags=-buildid=<guid>`), que evita el
     bloqueo por reputación. Los números de cobertura de arriba son reales.
-  En una máquina sin esa política, `go test ./... -coverprofile=coverage.out`
-  funciona sin más.
-- **Docker no está instalado** en esta máquina, así que `docker compose up` no se
-  ejecutó localmente aquí; los `Dockerfile` y el `docker-compose.yml` están
-  escritos y revisados. La verificación end-to-end se hizo corriendo el backend
-  Go nativo y el frontend con Vite, con curls reales (los de arriba) contra el
-  servidor.
+  En una máquina sin esa política, `npm test` / `go test ./...` funcionan sin más.
+  La verificación end-to-end se hizo corriendo el backend Go y el frontend Vite,
+  con curls reales (los de arriba) contra el servidor.
